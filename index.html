@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Receipts">
+  <title>Receipt Capture</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --surface2: #242424;
+      --border: #2e2e2e;
+      --accent: #c8f564;
+      --accent-dim: rgba(200, 245, 100, 0.12);
+      --text: #f0f0f0;
+      --text-dim: #888;
+      --text-muted: #555;
+      --red: #ff5c5c;
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    header {
+      width: 100%;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .counter {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    main {
+      width: 100%;
+      max-width: 480px;
+      padding: 24px 20px 100px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Capture area */
+    .capture-zone {
+      position: relative;
+      background: var(--surface);
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      aspect-ratio: 3/4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color 0.3s, border-style 0.3s;
+    }
+    .capture-zone:active { border-color: var(--accent); }
+    .capture-zone.has-image { border-style: solid; border-color: var(--accent); }
+
+    .capture-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .capture-icon {
+      width: 64px;
+      height: 64px;
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .capture-label {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .capture-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    #preview {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    #fileInput { display: none; }
+
+    /* Buttons */
+    .action-bar { display: flex; gap: 10px; }
+
+    .btn {
+      flex: 1;
+      padding: 16px;
+      border-radius: var(--radius);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0f0f0f;
+      font-weight: 600;
+    }
+    .btn-primary:active { background: #b8e454; }
+    .btn-primary:disabled { background: var(--surface2); color: var(--text-muted); cursor: not-allowed; }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+
+    /* Extracted data card */
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: none;
+    }
+    .result-card.visible { display: block; animation: slideUp 0.3s ease-out; }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .result-title {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .result-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 100px;
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    .field-list { padding: 4px 0; }
+
+    .field-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 16px;
+    }
+    .field-row:last-child { border-bottom: none; }
+
+    .field-key {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .field-val {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text);
+      text-align: right;
+      word-break: break-word;
+    }
+    .field-val.amount { color: var(--accent); font-weight: 500; font-size: 15px; }
+
+    /* Processing overlay */
+    .processing-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 15, 15, 0.92);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      z-index: 50;
+    }
+    .processing-overlay.active { display: flex; }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .processing-text {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 12px 22px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      white-space: nowrap;
+      z-index: 100;
+      max-width: 90vw;
+      text-align: center;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { border-color: var(--accent); color: var(--accent); }
+    .toast.error { border-color: var(--red); color: var(--red); }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 0 2px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Receipt Capture</div>
+  <div class="counter" id="counter"></div>
+</header>
+
+<main>
+  <div>
+    <div class="section-label" style="margin-bottom:10px;">Snap a receipt</div>
+    <div class="capture-zone" id="captureZone" onclick="document.getElementById('fileInput').click()">
+      <img id="preview" alt="Receipt preview" />
+      <div class="capture-placeholder" id="placeholder">
+        <div class="capture-icon">📷</div>
+        <div class="capture-label">Tap to capture</div>
+        <div class="capture-sub">Take a photo or choose<br>from your library</div>
+      </div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" capture="environment" onchange="handleImage(event)" />
+  </div>
+
+  <div class="action-bar">
+    <button class="btn btn-secondary" onclick="clearImage()">Clear</button>
+    <button class="btn btn-primary" id="submitBtn" onclick="processReceipt()" disabled>
+      Snap & Save
+    </button>
+  </div>
+
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <span class="result-title">Saved to Sheets</span>
+      <span class="result-badge">✓ Done</span>
+    </div>
+    <div class="field-list" id="fieldList"></div>
+  </div>
+</main>
+
+<div class="processing-overlay" id="overlay">
+  <div class="spinner"></div>
+  <div class="processing-text" id="overlayText">Reading receipt...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // PASTE YOUR APPS SCRIPT WEB APP URL HERE
+  // ─────────────────────────────────────────────────────
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzSn2a1Hdbqw8E3WUFOFQ-OZetWj8mLAo3WFrv3NrRUIRnDap4vc1LNDnOtnIhbf7a_/exec';
+  // ─────────────────────────────────────────────────────
+
+  let currentImageBase64 = null;
+  let currentMimeType = null;
+
+  // ── Image handling ──────────────────────────────────
+  function handleImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    currentMimeType = file.type || 'image/jpeg';
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      currentImageBase64 = dataUrl.split(',')[1];
+
+      document.getElementById('preview').src = dataUrl;
+      document.getElementById('preview').style.display = 'block';
+      document.getElementById('placeholder').style.display = 'none';
+      document.getElementById('captureZone').classList.add('has-image');
+      document.getElementById('submitBtn').disabled = false;
+      document.getElementById('resultCard').classList.remove('visible');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearImage() {
+    currentImageBase64 = null;
+    currentMimeType = null;
+    document.getElementById('preview').style.display = 'none';
+    document.getElementById('placeholder').style.display = 'flex';
+    document.getElementById('captureZone').classList.remove('has-image');
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('resultCard').classList.remove('visible');
+    document.getElementById('fileInput').value = '';
+  }
+
+  // ── Process receipt ─────────────────────────────────
+  async function processReceipt() {
+    if (!currentImageBase64) return;
+
+    if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+      showToast('Set your Apps Script URL first (see setup guide)', 'error');
+      return;
+    }
+
+    const overlay = document.getElementById('overlay');
+    const overlayText = document.getElementById('overlayText');
+    overlay.classList.add('active');
+
+    const steps = ['Reading receipt...', 'Extracting details...', 'Saving to Drive...', 'Logging to Sheets...'];
+    let step = 0;
+    const stepInterval = setInterval(() => {
+      step++;
+      if (step < steps.length) overlayText.textContent = steps[step];
+    }, 2000);
+
+    try {
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          image: currentImageBase64,
+          mimeType: currentMimeType
+        }),
+        headers: { 'Content-Type': 'text/plain' }
+      });
+
+      const result = await response.json();
+
+      if (result.error) throw new Error(result.error);
+
+      renderResult(result.data);
+      showToast('Receipt saved ✓', 'success');
+
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error');
+    } finally {
+      clearInterval(stepInterval);
+      overlay.classList.remove('active');
+    }
+  }
+
+  // ── Render result ───────────────────────────────────
+  function renderResult(data) {
+    const fields = [
+      { key: 'Date', val: data.date || '—' },
+      { key: 'Establishment', val: data.establishment || '—' },
+      { key: 'Amount', val: data.total ? '$' + parseFloat(data.total).toFixed(2) : '—', cls: 'amount' },
+      { key: 'Location', val: data.location || '—' },
+      { key: 'Category', val: data.category || '—' },
+    ];
+
+    document.getElementById('fieldList').innerHTML = fields.map(f => `
+      <div class="field-row">
+        <span class="field-key">${f.key}</span>
+        <span class="field-val ${f.cls || ''}">${f.val}</span>
+      </div>
+    `).join('');
+
+    document.getElementById('resultCard').classList.add('visible');
+  }
+
+  // ── Toast ───────────────────────────────────────────
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + type;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+</script>
+</body>
+</html>
