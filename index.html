@@ -4,83 +4,95 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Receipts">
   <title>Receipt Capture</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0f0f0f;
-      --surface: #1a1a1a;
-      --surface2: #242424;
-      --border: #2e2e2e;
-      --accent: #c8f564;
-      --accent-dim: rgba(200, 245, 100, 0.12);
-      --text: #f0f0f0;
-      --text-dim: #888;
-      --text-muted: #555;
-      --red: #ff5c5c;
-      --mono: 'DM Mono', monospace;
-      --sans: 'DM Sans', sans-serif;
-      --radius: 12px;
+      /* High-contrast palette — legibility first */
+      --bg: #eef0ee;
+      --card: #ffffff;
+      --ink: #0f1f1b;        /* near-black, 16:1 on white */
+      --ink-2: #3a4e49;      /* secondary, 7:1 on white */
+      --line: #d9ddd9;
+      --gold: #a07800;       /* dollar amounts on white, 4.6:1 */
+      --gold-bright: #f5c842;
+      --accent: #1e7d5a;     /* action green */
+      --accent-press: #186348;
+      --red: #c0392b;
+      --radius: 16px;
+      --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html { font-size: 18px; }            /* larger base — everything scales up */
+
     body {
       background: var(--bg);
-      color: var(--text);
+      color: var(--ink);
       font-family: var(--sans);
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
       align-items: center;
       -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
     }
 
+    /* ── Header ───────────────────────────────────── */
     header {
       width: 100%;
-      padding: 20px 24px 16px;
-      border-bottom: 1px solid var(--border);
+      padding: 18px 20px 16px;
+      background: var(--card);
+      border-bottom: 1px solid var(--line);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: var(--bg);
       position: sticky;
       top: 0;
       z-index: 10;
     }
 
-    .logo {
-      font-family: var(--mono);
-      font-size: 13px;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      color: var(--accent);
-      text-transform: uppercase;
+    .title {
+      font-size: 1.5rem;       /* 27px */
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--ink);
     }
 
-    .counter {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text-muted);
+    .title-badge {
+      font-size: 0.83rem;      /* 15px */
+      font-weight: 600;
+      color: var(--accent);
+      background: rgba(30, 125, 90, 0.1);
+      padding: 6px 12px;
+      border-radius: 100px;
     }
 
     main {
       width: 100%;
       max-width: 480px;
-      padding: 24px 20px 100px;
+      padding: 20px 16px 120px;
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 18px;
     }
 
-    /* Capture area */
+    .section-label {
+      font-size: 0.94rem;      /* 17px */
+      font-weight: 700;
+      color: var(--ink-2);
+      padding: 0 2px;
+      margin-bottom: -4px;
+    }
+
+    /* ── Capture zone ─────────────────────────────── */
     .capture-zone {
       position: relative;
-      background: var(--surface);
-      border: 2px dashed var(--border);
+      background: var(--card);
+      border: 2px dashed var(--line);
       border-radius: var(--radius);
       overflow: hidden;
       aspect-ratio: 3/4;
@@ -88,7 +100,7 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: border-color 0.3s, border-style 0.3s;
+      transition: border-color 0.2s;
     }
     .capture-zone:active { border-color: var(--accent); }
     .capture-zone.has-image { border-style: solid; border-color: var(--accent); }
@@ -97,32 +109,32 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 14px;
-      color: var(--text-muted);
+      gap: 16px;
+      color: var(--ink-2);
       pointer-events: none;
+      padding: 24px;
     }
 
     .capture-icon {
-      width: 64px;
-      height: 64px;
-      border: 1.5px solid var(--border);
+      width: 76px;
+      height: 76px;
+      background: var(--bg);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
+      font-size: 36px;
     }
 
     .capture-label {
-      font-family: var(--mono);
-      font-size: 12px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
+      font-size: 1.17rem;      /* 21px */
+      font-weight: 700;
+      color: var(--ink);
     }
 
     .capture-sub {
-      font-size: 13px;
-      color: var(--text-muted);
+      font-size: 1rem;         /* 18px */
+      color: var(--ink-2);
       text-align: center;
       line-height: 1.5;
     }
@@ -138,80 +150,86 @@
 
     #fileInput { display: none; }
 
-    /* Buttons */
-    .action-bar { display: flex; gap: 10px; }
+    /* ── Buttons ──────────────────────────────────── */
+    .action-bar { display: flex; gap: 12px; }
 
     .btn {
-      flex: 1;
-      padding: 16px;
       border-radius: var(--radius);
-      font-family: var(--mono);
-      font-size: 12px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      font-family: var(--sans);
+      font-size: 1.11rem;      /* 20px */
+      font-weight: 700;
       cursor: pointer;
       border: none;
-      transition: all 0.2s;
+      transition: background 0.15s, transform 0.05s;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
+      padding: 20px;           /* large tap target ~64px tall */
     }
+    .btn:active { transform: scale(0.985); }
 
     .btn-primary {
+      flex: 2;
       background: var(--accent);
-      color: #0f0f0f;
-      font-weight: 600;
+      color: #fff;
     }
-    .btn-primary:active { background: #b8e454; }
-    .btn-primary:disabled { background: var(--surface2); color: var(--text-muted); cursor: not-allowed; }
+    .btn-primary:active { background: var(--accent-press); }
+    .btn-primary:disabled { background: #b8c2be; color: #eef0ee; cursor: not-allowed; }
 
     .btn-secondary {
-      background: var(--surface);
-      color: var(--text-dim);
-      border: 1px solid var(--border);
+      flex: 1;
+      background: var(--card);
+      color: var(--ink-2);
+      border: 1.5px solid var(--line);
     }
 
-    /* Extracted data card */
+    /* ── Result card ──────────────────────────────── */
     .result-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: var(--card);
+      border: 1px solid var(--line);
       border-radius: var(--radius);
       overflow: hidden;
       display: none;
+      box-shadow: 0 2px 12px rgba(15, 31, 27, 0.06);
     }
     .result-card.visible { display: block; animation: slideUp 0.3s ease-out; }
-
     @keyframes slideUp {
-      from { opacity: 0; transform: translateY(12px); }
+      from { opacity: 0; transform: translateY(14px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .result-header {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    /* Big glanceable amount at top of result */
+    .amount-hero {
+      padding: 22px 20px 18px;
+      text-align: center;
+      border-bottom: 1px solid var(--line);
+      background: var(--card);
     }
-
-    .result-title {
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.1em;
+    .amount-hero-label {
+      font-size: 0.83rem;      /* 15px */
+      font-weight: 700;
       text-transform: uppercase;
-      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      color: var(--ink-2);
+      margin-bottom: 4px;
     }
-
-    .result-badge {
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      padding: 4px 10px;
-      border-radius: 100px;
-      background: var(--accent-dim);
+    .amount-hero-value {
+      font-size: 3rem;         /* 54px — readable across the room */
+      font-weight: 800;
+      color: var(--gold);
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+    }
+    .amount-hero-badge {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 0.83rem;
+      font-weight: 700;
       color: var(--accent);
+      background: rgba(30, 125, 90, 0.1);
+      padding: 6px 14px;
+      border-radius: 100px;
     }
 
     .field-list { padding: 4px 0; }
@@ -220,48 +238,46 @@
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      padding: 11px 16px;
-      border-bottom: 1px solid var(--border);
-      gap: 16px;
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--line);
+      gap: 18px;
     }
     .field-row:last-child { border-bottom: none; }
 
     .field-key {
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-muted);
+      font-size: 0.94rem;      /* 17px */
+      font-weight: 600;
+      color: var(--ink-2);
       flex-shrink: 0;
     }
 
     .field-val {
-      font-family: var(--mono);
-      font-size: 13px;
-      color: var(--text);
+      font-size: 1.06rem;      /* 19px */
+      font-weight: 600;
+      color: var(--ink);
       text-align: right;
       word-break: break-word;
     }
-    .field-val.amount { color: var(--accent); font-weight: 500; font-size: 15px; }
 
-    /* Processing overlay */
+    /* ── Processing overlay ───────────────────────── */
     .processing-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(15, 15, 15, 0.92);
+      background: rgba(238, 240, 238, 0.94);
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 20px;
+      gap: 22px;
       z-index: 50;
+      backdrop-filter: blur(2px);
     }
     .processing-overlay.active { display: flex; }
 
     .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid var(--border);
+      width: 46px;
+      height: 46px;
+      border: 4px solid var(--line);
       border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
@@ -269,78 +285,65 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .processing-text {
-      font-family: var(--mono);
-      font-size: 12px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-dim);
+      font-size: 1.11rem;      /* 20px */
+      font-weight: 700;
+      color: var(--ink);
     }
 
-    /* Toast */
+    /* ── Toast ────────────────────────────────────── */
     .toast {
       position: fixed;
       bottom: 28px;
       left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      background: var(--surface2);
-      border: 1px solid var(--border);
+      transform: translateX(-50%) translateY(90px);
+      background: var(--ink);
+      color: #fff;
       border-radius: 100px;
-      padding: 12px 22px;
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--text);
+      padding: 16px 26px;
+      font-size: 1.06rem;      /* 19px */
+      font-weight: 600;
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-      white-space: nowrap;
       z-index: 100;
       max-width: 90vw;
       text-align: center;
+      box-shadow: 0 4px 20px rgba(15, 31, 27, 0.25);
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
-    .toast.success { border-color: var(--accent); color: var(--accent); }
-    .toast.error { border-color: var(--red); color: var(--red); }
-
-    .section-label {
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      padding: 0 2px;
-    }
+    .toast.success { background: var(--accent); }
+    .toast.error { background: var(--red); }
   </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">Receipt Capture</div>
-  <div class="counter" id="counter"></div>
+  <span class="title">Receipts</span>
+  <span class="title-badge">Snap &amp; Save</span>
 </header>
 
 <main>
-  <div>
-    <div class="section-label" style="margin-bottom:10px;">Snap a receipt</div>
-    <div class="capture-zone" id="captureZone" onclick="document.getElementById('fileInput').click()">
-      <img id="preview" alt="Receipt preview" />
-      <div class="capture-placeholder" id="placeholder">
-        <div class="capture-icon">📷</div>
-        <div class="capture-label">Tap to capture</div>
-        <div class="capture-sub">Take a photo or choose<br>from your library</div>
-      </div>
+  <div class="section-label">Snap a receipt</div>
+  <div class="capture-zone" id="captureZone" onclick="document.getElementById('fileInput').click()">
+    <img id="preview" alt="Receipt preview" />
+    <div class="capture-placeholder" id="placeholder">
+      <div class="capture-icon">📷</div>
+      <div class="capture-label">Tap to take a photo</div>
+      <div class="capture-sub">Point at the receipt and snap,<br>or pick one from your library</div>
     </div>
-    <input type="file" id="fileInput" accept="image/*" capture="environment" onchange="handleImage(event)" />
   </div>
+  <input type="file" id="fileInput" accept="image/*" capture="environment" onchange="handleImage(event)" />
 
   <div class="action-bar">
     <button class="btn btn-secondary" onclick="clearImage()">Clear</button>
     <button class="btn btn-primary" id="submitBtn" onclick="processReceipt()" disabled>
-      Snap & Save
+      Snap &amp; Save
     </button>
   </div>
 
   <div class="result-card" id="resultCard">
-    <div class="result-header">
-      <span class="result-title">Saved to Sheets</span>
-      <span class="result-badge">✓ Done</span>
+    <div class="amount-hero">
+      <div class="amount-hero-label">Total</div>
+      <div class="amount-hero-value" id="heroAmount">$0.00</div>
+      <div class="amount-hero-badge">✓ Saved to your sheet</div>
     </div>
     <div class="field-list" id="fieldList"></div>
   </div>
@@ -357,7 +360,7 @@
   // ─────────────────────────────────────────────────────
   // PASTE YOUR APPS SCRIPT WEB APP URL HERE
   // ─────────────────────────────────────────────────────
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzSn2a1Hdbqw8E3WUFOFQ-OZetWj8mLAo3WFrv3NrRUIRnDap4vc1LNDnOtnIhbf7a_/exec';
+  const APPS_SCRIPT_URL = 'script.google.com/macros/s/AKfycbzSn2a1Hdbqw8E3WUFOFQ-OZetWj8mLAo3WFrv3NrRUIRnDap4vc1LNDnOtnIhbf7a_/exec';
   // ─────────────────────────────────────────────────────
 
   let currentImageBase64 = null;
@@ -409,7 +412,7 @@
     const overlayText = document.getElementById('overlayText');
     overlay.classList.add('active');
 
-    const steps = ['Reading receipt...', 'Extracting details...', 'Saving to Drive...', 'Logging to Sheets...'];
+    const steps = ['Reading receipt...', 'Extracting details...', 'Saving to Drive...', 'Logging to Sheet...'];
     let step = 0;
     const stepInterval = setInterval(() => {
       step++;
@@ -443,10 +446,12 @@
 
   // ── Render result ───────────────────────────────────
   function renderResult(data) {
+    document.getElementById('heroAmount').textContent =
+      data.total ? '$' + parseFloat(data.total).toFixed(2) : '—';
+
     const fields = [
       { key: 'Date', val: data.date || '—' },
       { key: 'Establishment', val: data.establishment || '—' },
-      { key: 'Amount', val: data.total ? '$' + parseFloat(data.total).toFixed(2) : '—', cls: 'amount' },
       { key: 'Location', val: data.location || '—' },
       { key: 'Category', val: data.category || '—' },
     ];
@@ -454,7 +459,7 @@
     document.getElementById('fieldList').innerHTML = fields.map(f => `
       <div class="field-row">
         <span class="field-key">${f.key}</span>
-        <span class="field-val ${f.cls || ''}">${f.val}</span>
+        <span class="field-val">${f.val}</span>
       </div>
     `).join('');
 
