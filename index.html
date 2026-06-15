@@ -9,24 +9,22 @@
   <title>Receipt Capture</title>
   <style>
     :root {
-      /* High-contrast palette — legibility first */
       --bg: #eef0ee;
       --card: #ffffff;
-      --ink: #0f1f1b;        /* near-black, 16:1 on white */
-      --ink-2: #3a4e49;      /* secondary, 7:1 on white */
+      --ink: #0f1f1b;
+      --ink-2: #3a4e49;
       --line: #d9ddd9;
-      --gold: #a07800;       /* dollar amounts on white, 4.6:1 */
-      --gold-bright: #f5c842;
-      --accent: #1e7d5a;     /* action green */
+      --gold: #a07800;
+      --accent: #1e7d5a;
       --accent-press: #186348;
+      --accent-light: rgba(30, 125, 90, 0.1);
       --red: #c0392b;
       --radius: 16px;
       --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html { font-size: 18px; }            /* larger base — everything scales up */
+    html { font-size: 18px; }
 
     body {
       background: var(--bg);
@@ -40,7 +38,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Header ───────────────────────────────────── */
     header {
       width: 100%;
       padding: 18px 20px 16px;
@@ -55,17 +52,17 @@
     }
 
     .title {
-      font-size: 1.5rem;       /* 27px */
+      font-size: 1.5rem;
       font-weight: 700;
       letter-spacing: -0.01em;
       color: var(--ink);
     }
 
     .title-badge {
-      font-size: 0.83rem;      /* 15px */
+      font-size: 0.83rem;
       font-weight: 600;
       color: var(--accent);
-      background: rgba(30, 125, 90, 0.1);
+      background: var(--accent-light);
       padding: 6px 12px;
       border-radius: 100px;
     }
@@ -81,7 +78,7 @@
     }
 
     .section-label {
-      font-size: 0.94rem;      /* 17px */
+      font-size: 0.94rem;
       font-weight: 700;
       color: var(--ink-2);
       padding: 0 2px;
@@ -127,13 +124,13 @@
     }
 
     .capture-label {
-      font-size: 1.17rem;      /* 21px */
+      font-size: 1.17rem;
       font-weight: 700;
       color: var(--ink);
     }
 
     .capture-sub {
-      font-size: 1rem;         /* 18px */
+      font-size: 1rem;
       color: var(--ink-2);
       text-align: center;
       line-height: 1.5;
@@ -156,7 +153,7 @@
     .btn {
       border-radius: var(--radius);
       font-family: var(--sans);
-      font-size: 1.11rem;      /* 20px */
+      font-size: 1.11rem;
       font-weight: 700;
       cursor: pointer;
       border: none;
@@ -165,7 +162,7 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-      padding: 20px;           /* large tap target ~64px tall */
+      padding: 20px;
     }
     .btn:active { transform: scale(0.985); }
 
@@ -184,8 +181,8 @@
       border: 1.5px solid var(--line);
     }
 
-    /* ── Result card ──────────────────────────────── */
-    .result-card {
+    /* ── Edit card ────────────────────────────────── */
+    .edit-card {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: var(--radius);
@@ -193,13 +190,14 @@
       display: none;
       box-shadow: 0 2px 12px rgba(15, 31, 27, 0.06);
     }
-    .result-card.visible { display: block; animation: slideUp 0.3s ease-out; }
+    .edit-card.visible { display: block; animation: slideUp 0.3s ease-out; }
+
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(14px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Big glanceable amount at top of result */
+    /* Big glanceable amount — editable */
     .amount-hero {
       padding: 22px 20px 18px;
       text-align: center;
@@ -207,57 +205,130 @@
       background: var(--card);
     }
     .amount-hero-label {
-      font-size: 0.83rem;      /* 15px */
+      font-size: 0.83rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
       color: var(--ink-2);
-      margin-bottom: 4px;
+      margin-bottom: 8px;
     }
-    .amount-hero-value {
-      font-size: 3rem;         /* 54px — readable across the room */
+    .amount-input {
+      font-size: 3rem;
       font-weight: 800;
       color: var(--gold);
       letter-spacing: -0.02em;
       line-height: 1.05;
+      text-align: center;
+      border: none;
+      border-bottom: 2px solid var(--line);
+      background: transparent;
+      width: 100%;
+      outline: none;
+      font-family: var(--sans);
+      padding-bottom: 4px;
     }
-    .amount-hero-badge {
-      display: inline-block;
-      margin-top: 10px;
-      font-size: 0.83rem;
-      font-weight: 700;
-      color: var(--accent);
-      background: rgba(30, 125, 90, 0.1);
-      padding: 6px 14px;
-      border-radius: 100px;
+    .amount-input:focus { border-bottom-color: var(--accent); }
+
+    .edit-hint {
+      font-size: 0.78rem;
+      color: var(--ink-2);
+      margin-top: 8px;
+      font-weight: 500;
     }
 
-    .field-list { padding: 4px 0; }
+    /* Field rows — editable */
+    .field-list { padding: 0; }
 
     .field-row {
       display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      padding: 15px 20px;
+      flex-direction: column;
+      padding: 14px 20px;
       border-bottom: 1px solid var(--line);
-      gap: 18px;
+      gap: 6px;
     }
     .field-row:last-child { border-bottom: none; }
 
     .field-key {
-      font-size: 0.94rem;      /* 17px */
-      font-weight: 600;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       color: var(--ink-2);
-      flex-shrink: 0;
     }
 
-    .field-val {
-      font-size: 1.06rem;      /* 19px */
+    .field-input {
+      font-size: 1.06rem;
       font-weight: 600;
       color: var(--ink);
-      text-align: right;
-      word-break: break-word;
+      border: none;
+      border-bottom: 1.5px solid var(--line);
+      background: transparent;
+      outline: none;
+      font-family: var(--sans);
+      padding: 4px 0 6px;
+      width: 100%;
+      transition: border-color 0.15s;
     }
+    .field-input:focus { border-bottom-color: var(--accent); }
+
+    .field-select {
+      font-size: 1.06rem;
+      font-weight: 600;
+      color: var(--ink);
+      border: none;
+      border-bottom: 1.5px solid var(--line);
+      background: transparent;
+      outline: none;
+      font-family: var(--sans);
+      padding: 4px 0 6px;
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .field-select:focus { border-bottom-color: var(--accent); }
+
+    /* Meals extra fields — hidden until category = Meals */
+    .meals-fields {
+      display: none;
+      background: rgba(30, 125, 90, 0.04);
+      border-top: 1px solid var(--line);
+    }
+    .meals-fields.visible { display: block; }
+
+    .meals-banner {
+      padding: 10px 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--accent-light);
+      border-bottom: 1px solid var(--line);
+    }
+
+    /* Save button inside card */
+    .save-row {
+      padding: 16px 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .btn-save {
+      width: 100%;
+      padding: 20px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: var(--sans);
+      font-size: 1.17rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.05s;
+    }
+    .btn-save:active { background: var(--accent-press); transform: scale(0.985); }
+    .btn-save:disabled { background: #b8c2be; cursor: not-allowed; }
 
     /* ── Processing overlay ───────────────────────── */
     .processing-overlay {
@@ -285,7 +356,7 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .processing-text {
-      font-size: 1.11rem;      /* 20px */
+      font-size: 1.11rem;
       font-weight: 700;
       color: var(--ink);
     }
@@ -300,7 +371,7 @@
       color: #fff;
       border-radius: 100px;
       padding: 16px 26px;
-      font-size: 1.06rem;      /* 19px */
+      font-size: 1.06rem;
       font-weight: 600;
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       z-index: 100;
@@ -322,6 +393,7 @@
 
 <main>
   <div class="section-label">Snap a receipt</div>
+
   <div class="capture-zone" id="captureZone" onclick="document.getElementById('fileInput').click()">
     <img id="preview" alt="Receipt preview" />
     <div class="capture-placeholder" id="placeholder">
@@ -333,19 +405,80 @@
   <input type="file" id="fileInput" accept="image/*" onchange="handleImage(event)" />
 
   <div class="action-bar">
-    <button class="btn btn-secondary" onclick="clearImage()">Clear</button>
-    <button class="btn btn-primary" id="submitBtn" onclick="processReceipt()" disabled>
-      Snap &amp; Save
+    <button class="btn btn-secondary" onclick="clearAll()">Clear</button>
+    <button class="btn btn-primary" id="extractBtn" onclick="extractReceipt()" disabled>
+      Read Receipt
     </button>
   </div>
 
-  <div class="result-card" id="resultCard">
+  <!-- Editable fields shown after extraction -->
+  <div class="edit-card" id="editCard">
+
+    <!-- Editable amount hero -->
     <div class="amount-hero">
-      <div class="amount-hero-label">Total</div>
-      <div class="amount-hero-value" id="heroAmount">$0.00</div>
-      <div class="amount-hero-badge">✓ Saved to your sheet</div>
+      <div class="amount-hero-label">Total Paid</div>
+      <input class="amount-input" id="f_total" type="number" step="0.01" placeholder="0.00" />
+      <div class="edit-hint">✏️ All fields are editable — review before saving</div>
     </div>
-    <div class="field-list" id="fieldList"></div>
+
+    <div class="field-list">
+
+      <div class="field-row">
+        <label class="field-key" for="f_date">Date</label>
+        <input class="field-input" id="f_date" type="date" />
+      </div>
+
+      <div class="field-row">
+        <label class="field-key" for="f_establishment">Establishment</label>
+        <input class="field-input" id="f_establishment" type="text" placeholder="Business name" />
+      </div>
+
+      <div class="field-row">
+        <label class="field-key" for="f_location">Location</label>
+        <input class="field-input" id="f_location" type="text" placeholder="City, State" />
+      </div>
+
+      <div class="field-row">
+        <label class="field-key" for="f_category">Category</label>
+        <select class="field-select" id="f_category" onchange="handleCategoryChange()">
+          <option value="Meals">Meals</option>
+          <option value="Travel">Travel</option>
+          <option value="Lodging">Lodging</option>
+          <option value="Office Supplies">Office Supplies</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+    </div>
+
+    <!-- IRS meal fields — shown only when category = Meals -->
+    <div class="meals-fields" id="mealsFields">
+      <div class="meals-banner">📋 IRS Required — Business Meals</div>
+
+      <div class="field-row">
+        <label class="field-key" for="f_attendees">Attendees</label>
+        <input class="field-input" id="f_attendees" type="text" placeholder="Names and titles/relationship" />
+      </div>
+
+      <div class="field-row" style="border-bottom:none;">
+        <label class="field-key" for="f_purpose">Business Purpose</label>
+        <input class="field-input" id="f_purpose" type="text" placeholder="e.g. Sales meeting with prospective client" />
+      </div>
+    </div>
+
+    <div class="field-list" style="border-top: 1px solid var(--line);">
+      <div class="field-row" style="border-bottom:none;">
+        <label class="field-key" for="f_notes">Notes</label>
+        <input class="field-input" id="f_notes" type="text" placeholder="e.g. Client paid half, billable to project X" />
+      </div>
+    </div>
+
+    <div class="save-row">
+      <button class="btn-save" id="saveBtn" onclick="saveToSheet()">
+        Save to Sheet
+      </button>
+    </div>
+
   </div>
 </main>
 
@@ -360,17 +493,17 @@
   // ─────────────────────────────────────────────────────
   // PASTE YOUR APPS SCRIPT WEB APP URL HERE
   // ─────────────────────────────────────────────────────
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzSn2a1Hdbqw8E3WUFOFQ-OZetWj8mLAo3WFrv3NrRUIRnDap4vc1LNDnOtnIhbf7a_/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwV9TmneC1U9xRmbsufcc7FBx4VWo8QsSwlc4HiNqCgW4LVDNFVZ_T5Szajy2whBA0E/exec';
   // ─────────────────────────────────────────────────────
 
   let currentImageBase64 = null;
   let currentMimeType = null;
+  let driveLink = null; // set after Drive upload
 
   // ── Image handling ──────────────────────────────────
   function handleImage(event) {
     const file = event.target.files[0];
     if (!file) return;
-
     currentMimeType = file.type || 'image/jpeg';
 
     const reader = new FileReader();
@@ -382,47 +515,51 @@
       document.getElementById('preview').style.display = 'block';
       document.getElementById('placeholder').style.display = 'none';
       document.getElementById('captureZone').classList.add('has-image');
-      document.getElementById('submitBtn').disabled = false;
-      document.getElementById('resultCard').classList.remove('visible');
+      document.getElementById('extractBtn').disabled = false;
+      document.getElementById('editCard').classList.remove('visible');
+      driveLink = null;
     };
     reader.readAsDataURL(file);
   }
 
-  function clearImage() {
+  function clearAll() {
     currentImageBase64 = null;
     currentMimeType = null;
+    driveLink = null;
     document.getElementById('preview').style.display = 'none';
     document.getElementById('placeholder').style.display = 'flex';
     document.getElementById('captureZone').classList.remove('has-image');
-    document.getElementById('submitBtn').disabled = true;
-    document.getElementById('resultCard').classList.remove('visible');
+    document.getElementById('extractBtn').disabled = true;
+    document.getElementById('editCard').classList.remove('visible');
     document.getElementById('fileInput').value = '';
   }
 
-  // ── Process receipt ─────────────────────────────────
-  async function processReceipt() {
-    if (!currentImageBase64) return;
+  // ── Category toggle ─────────────────────────────────
+  function handleCategoryChange() {
+    const cat = document.getElementById('f_category').value;
+    const meals = document.getElementById('mealsFields');
+    if (cat === 'Meals') {
+      meals.classList.add('visible');
+    } else {
+      meals.classList.remove('visible');
+    }
+  }
 
+  // ── Step 1: Extract only (Claude + Drive upload) ────
+  async function extractReceipt() {
+    if (!currentImageBase64) return;
     if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
-      showToast('Set your Apps Script URL first (see setup guide)', 'error');
+      showToast('Set your Apps Script URL first', 'error');
       return;
     }
 
-    const overlay = document.getElementById('overlay');
-    const overlayText = document.getElementById('overlayText');
-    overlay.classList.add('active');
-
-    const steps = ['Reading receipt...', 'Extracting details...', 'Saving to Drive...', 'Logging to Sheet...'];
-    let step = 0;
-    const stepInterval = setInterval(() => {
-      step++;
-      if (step < steps.length) overlayText.textContent = steps[step];
-    }, 2000);
+    showOverlay('Reading receipt...');
 
     try {
       const response = await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
         body: JSON.stringify({
+          action: 'extract',
           image: currentImageBase64,
           mimeType: currentMimeType
         }),
@@ -430,40 +567,102 @@
       });
 
       const result = await response.json();
-
       if (result.error) throw new Error(result.error);
 
-      renderResult(result.data);
-      showToast('Receipt saved ✓', 'success');
+      driveLink = result.driveLink;
+      populateFields(result.data);
+      document.getElementById('editCard').classList.add('visible');
+      showToast('Review and save when ready', '');
 
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
     } finally {
-      clearInterval(stepInterval);
-      overlay.classList.remove('active');
+      hideOverlay();
     }
   }
 
-  // ── Render result ───────────────────────────────────
-  function renderResult(data) {
-    document.getElementById('heroAmount').textContent =
-      data.total ? '$' + parseFloat(data.total).toFixed(2) : '—';
+  // ── Populate editable fields ────────────────────────
+  function populateFields(data) {
+    document.getElementById('f_total').value = data.total ? parseFloat(data.total).toFixed(2) : '';
+    document.getElementById('f_date').value = data.date || '';
+    document.getElementById('f_establishment').value = data.establishment || '';
+    document.getElementById('f_location').value = data.location || '';
 
-    const fields = [
-      { key: 'Date', val: data.date || '—' },
-      { key: 'Establishment', val: data.establishment || '—' },
-      { key: 'Location', val: data.location || '—' },
-      { key: 'Category', val: data.category || '—' },
-    ];
+    const catSelect = document.getElementById('f_category');
+    const cats = ['Meals','Travel','Lodging','Office Supplies','Other'];
+    catSelect.value = cats.includes(data.category) ? data.category : 'Other';
 
-    document.getElementById('fieldList').innerHTML = fields.map(f => `
-      <div class="field-row">
-        <span class="field-key">${f.key}</span>
-        <span class="field-val">${f.val}</span>
-      </div>
-    `).join('');
+    // Clear meal fields
+    document.getElementById('f_attendees').value = '';
+    document.getElementById('f_purpose').value = '';
+    document.getElementById('f_notes').value = '';
 
-    document.getElementById('resultCard').classList.add('visible');
+    handleCategoryChange();
+  }
+
+  // ── Step 2: Save edited data to Sheet ──────────────
+  async function saveToSheet() {
+    const saveBtn = document.getElementById('saveBtn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+
+    const category = document.getElementById('f_category').value;
+    const isMeals = category === 'Meals';
+
+    // Validate meal fields
+    if (isMeals) {
+      const attendees = document.getElementById('f_attendees').value.trim();
+      const purpose = document.getElementById('f_purpose').value.trim();
+      if (!attendees || !purpose) {
+        showToast('Attendees and Business Purpose required for meals', 'error');
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save to Sheet';
+        return;
+      }
+    }
+
+    const payload = {
+      action: 'save',
+      driveLink: driveLink || '',
+      data: {
+        date: document.getElementById('f_date').value,
+        establishment: document.getElementById('f_establishment').value,
+        total: document.getElementById('f_total').value,
+        location: document.getElementById('f_location').value,
+        category: category,
+        attendees: isMeals ? document.getElementById('f_attendees').value : '',
+        purpose: isMeals ? document.getElementById('f_purpose').value : '',
+        notes: document.getElementById('f_notes').value,
+      }
+    };
+
+    try {
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'text/plain' }
+      });
+
+      const result = await response.json();
+      if (result.error) throw new Error(result.error);
+
+      showToast('Saved to sheet ✓', 'success');
+      setTimeout(() => clearAll(), 1800);
+
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error');
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save to Sheet';
+    }
+  }
+
+  // ── Overlay helpers ─────────────────────────────────
+  function showOverlay(msg) {
+    document.getElementById('overlayText').textContent = msg;
+    document.getElementById('overlay').classList.add('active');
+  }
+  function hideOverlay() {
+    document.getElementById('overlay').classList.remove('active');
   }
 
   // ── Toast ───────────────────────────────────────────
